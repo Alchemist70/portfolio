@@ -13,10 +13,13 @@ import {
   CircularProgress,
   Alert,
   useTheme,
-  Paper
+  Paper,
+  IconButton
 } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { motion } from 'framer-motion';
 import { api } from '../services/api';
 
@@ -27,17 +30,19 @@ const Projects = ({ featured = false }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await api.get(`/projects${featured ? '?featured=true' : ''}`);
+        const response = await api.get(`/projects?page=${currentPage}&size=${itemsPerPage}${featured ? '&featured=true' : ''}`);
         const data = response.data;
-        setProjects(
-          Array.isArray(data)
-            ? data
-            : data.items || data.data || []
-        );
+        setProjects(Array.isArray(data.items) ? data.items : []);
+        setTotalPages(data.pagination?.totalPages || 1);
+        setTotalItems(data.pagination?.totalItems || 0);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch projects');
@@ -45,7 +50,19 @@ const Projects = ({ featured = false }) => {
       }
     };
     fetchProjects();
-  }, [featured]);
+  }, [featured, currentPage]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   if (loading) {
     return (
@@ -158,6 +175,39 @@ const Projects = ({ featured = false }) => {
           </Grid>
         ))}
       </Grid>
+      
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" alignItems="center" mt={6} gap={2}>
+          <IconButton
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            sx={{
+              color: theme.palette.primary.main,
+              '&:disabled': {
+                color: theme.palette.text.disabled
+              }
+            }}
+          >
+            <NavigateBeforeIcon />
+          </IconButton>
+          <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+            Page {currentPage} of {totalPages} ({totalItems} total projects)
+          </Typography>
+          <IconButton
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            sx={{
+              color: theme.palette.primary.main,
+              '&:disabled': {
+                color: theme.palette.text.disabled
+              }
+            }}
+          >
+            <NavigateNextIcon />
+          </IconButton>
+        </Box>
+      )}
     </Container>
   );
 };

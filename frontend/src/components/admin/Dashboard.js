@@ -7,7 +7,6 @@ import {
   Typography,
   Tabs,
   Tab,
-  CircularProgress,
   Alert,
   Avatar,
   Button

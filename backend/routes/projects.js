@@ -9,10 +9,13 @@ const { getPagination, getPagingData, createSearchQuery } = require('../utils/qu
 // Get all projects with pagination and search
 router.get('/', apiLimiter, async (req, res) => {
   try {
-    const { page = 1, size = 10, search } = req.query;
+    const { page = 1, size = 10, search, featured } = req.query;
     const { limit, skip } = getPagination(page, size);
     
     const searchQuery = createSearchQuery(search, ['title', 'description', 'technologies']);
+    if (featured !== undefined) {
+      searchQuery.featured = featured === 'true';
+    }
     
     const [projects, total] = await Promise.all([
       Project.find(searchQuery)

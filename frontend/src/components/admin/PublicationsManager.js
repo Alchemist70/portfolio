@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -19,6 +19,8 @@ import {
   Switch
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { api } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -28,6 +30,10 @@ const PublicationsManager = () => {
   const [error, setError] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPublication, setEditingPublication] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
   const { token } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
@@ -40,26 +46,36 @@ const PublicationsManager = () => {
     featured: false
   });
 
-  const fetchPublications = async () => {
+  const fetchPublications = useCallback(async () => {
     try {
-      const response = await api.get('/publications');
+      const response = await api.get(`/publications?page=${currentPage}&size=${itemsPerPage}`);
       const data = response.data;
-      setPublications(
-        Array.isArray(data)
-          ? data
-          : data.items || data.data || []
-      );
+      setPublications(Array.isArray(data.items) ? data.items : []);
+      setTotalPages(data.pagination?.totalPages || 1);
+      setTotalItems(data.pagination?.totalItems || 0);
       setError('');
     } catch (err) {
       setError('Failed to fetch publications');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
     fetchPublications();
-  }, []);
+  }, [fetchPublications]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const handleOpenDialog = (publication = null) => {
     if (publication) {
@@ -254,6 +270,29 @@ const PublicationsManager = () => {
           </Grid>
         ))}
       </Grid>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" alignItems="center" mt={4} gap={2}>
+          <IconButton
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            color="primary"
+          >
+            <NavigateBeforeIcon />
+          </IconButton>
+          <Typography variant="body1" color="text.secondary">
+            Page {currentPage} of {totalPages} ({totalItems} total publications)
+          </Typography>
+          <IconButton
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            color="primary"
+          >
+            <NavigateNextIcon />
+          </IconButton>
+        </Box>
+      )}
 
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <form onSubmit={handleSubmit}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -20,6 +20,8 @@ import {
   Switch
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { api } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -29,6 +31,10 @@ const CertificatesManager = () => {
   const [error, setError] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCertificate, setEditingCertificate] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
   const { token } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
@@ -42,26 +48,36 @@ const CertificatesManager = () => {
     featured: false
   });
 
-  const fetchCertificates = async () => {
+  const fetchCertificates = useCallback(async () => {
     try {
-      const response = await api.get('/certificates');
+      const response = await api.get(`/certificates?page=${currentPage}&size=${itemsPerPage}`);
       const data = response.data;
-      setCertificates(
-        Array.isArray(data)
-          ? data
-          : data.items || data.data || []
-      );
+      setCertificates(Array.isArray(data.items) ? data.items : []);
+      setTotalPages(data.pagination?.totalPages || 1);
+      setTotalItems(data.pagination?.totalItems || 0);
       setError('');
     } catch (err) {
       setError('Failed to fetch certificates');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
     fetchCertificates();
-  }, []);
+  }, [fetchCertificates]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const handleOpenDialog = (certificate = null) => {
     if (certificate) {
@@ -251,6 +267,29 @@ const CertificatesManager = () => {
           </Grid>
         ))}
       </Grid>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" alignItems="center" mt={4} gap={2}>
+          <IconButton
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            color="primary"
+          >
+            <NavigateBeforeIcon />
+          </IconButton>
+          <Typography variant="body1" color="text.secondary">
+            Page {currentPage} of {totalPages} ({totalItems} total certificates)
+          </Typography>
+          <IconButton
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            color="primary"
+          >
+            <NavigateNextIcon />
+          </IconButton>
+        </Box>
+      )}
 
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <form onSubmit={handleSubmit}>

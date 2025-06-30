@@ -12,10 +12,13 @@ import {
   Alert,
   CardActions,
   useTheme,
-  Paper
+  Paper,
+  IconButton
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { api } from '../services/api';
 
 const MotionCard = motion(Card);
@@ -25,17 +28,19 @@ const Publications = ({ featured = false }) => {
   const [publications, setPublications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchPublications = async () => {
       try {
-        const response = await api.get(`/publications${featured ? '?featured=true' : ''}`);
+        const response = await api.get(`/publications?page=${currentPage}&size=${itemsPerPage}${featured ? '&featured=true' : ''}`);
         const data = response.data;
-        setPublications(
-          Array.isArray(data)
-            ? data
-            : data.items || data.data || []
-        );
+        setPublications(Array.isArray(data.items) ? data.items : []);
+        setTotalPages(data.pagination?.totalPages || 1);
+        setTotalItems(data.pagination?.totalItems || 0);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch publications');
@@ -44,7 +49,19 @@ const Publications = ({ featured = false }) => {
     };
 
     fetchPublications();
-  }, [featured]);
+  }, [featured, currentPage]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   if (loading) {
     return (
@@ -157,6 +174,39 @@ const Publications = ({ featured = false }) => {
           </Grid>
         ))}
       </Grid>
+      
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" alignItems="center" mt={6} gap={2}>
+          <IconButton
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            sx={{
+              color: theme.palette.primary.main,
+              '&:disabled': {
+                color: theme.palette.text.disabled
+              }
+            }}
+          >
+            <NavigateBeforeIcon />
+          </IconButton>
+          <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+            Page {currentPage} of {totalPages} ({totalItems} total publications)
+          </Typography>
+          <IconButton
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            sx={{
+              color: theme.palette.primary.main,
+              '&:disabled': {
+                color: theme.palette.text.disabled
+              }
+            }}
+          >
+            <NavigateNextIcon />
+          </IconButton>
+        </Box>
+      )}
     </Container>
   );
 };

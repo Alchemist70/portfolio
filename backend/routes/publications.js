@@ -9,9 +9,12 @@ const { getPagination, getPagingData, createSearchQuery } = require('../utils/qu
 // Get all publications with pagination and search
 router.get('/', apiLimiter, async (req, res) => {
   try {
-    const { page = 1, size = 10, search } = req.query;
+    const { page = 1, size = 10, search, featured } = req.query;
     const { limit, skip } = getPagination(page, size);
     const searchQuery = createSearchQuery(search, ['title', 'journal', 'abstract', 'keywords']);
+    if (featured !== undefined) {
+      searchQuery.featured = featured === 'true';
+    }
     const [publications, total] = await Promise.all([
       Publication.find(searchQuery)
         .sort({ publicationDate: -1 })

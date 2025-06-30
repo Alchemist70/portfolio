@@ -9,9 +9,12 @@ const { getPagination, getPagingData, createSearchQuery } = require('../utils/qu
 // Get all certificates with pagination and search
 router.get('/', apiLimiter, async (req, res) => {
   try {
-    const { page = 1, size = 10, search } = req.query;
+    const { page = 1, size = 10, search, featured } = req.query;
     const { limit, skip } = getPagination(page, size);
     const searchQuery = createSearchQuery(search, ['title', 'issuer', 'description']);
+    if (featured !== undefined) {
+      searchQuery.featured = featured === 'true';
+    }
     const [certificates, total] = await Promise.all([
       Certificate.find(searchQuery)
         .sort({ issueDate: -1 })

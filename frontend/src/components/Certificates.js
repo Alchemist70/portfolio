@@ -1,38 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Box,
+  Container,
+  Typography,
   Grid,
   Card,
   CardContent,
   CardMedia,
-  Typography,
   CardActions,
   Button,
-  Box,
   Chip,
   CircularProgress,
   Alert,
-  Container,
-  useTheme,
-  Paper
+  Paper,
+  IconButton
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { api } from '../services/api';
 
 const Certificates = ({ featured = false }) => {
-  const theme = useTheme();
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchCertificates = async () => {
       try {
-        const response = await api.get(`/certificates${featured ? '?featured=true' : ''}`);
+        const response = await api.get(`/certificates?page=${currentPage}&size=${itemsPerPage}${featured ? '&featured=true' : ''}`);
         const data = response.data;
-        setCertificates(
-          Array.isArray(data)
-            ? data
-            : data.items || data.data || []
-        );
+        setCertificates(Array.isArray(data.items) ? data.items : []);
+        setTotalPages(data.pagination?.totalPages || 1);
+        setTotalItems(data.pagination?.totalItems || 0);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch certificates');
@@ -40,7 +45,19 @@ const Certificates = ({ featured = false }) => {
       }
     };
     fetchCertificates();
-  }, [featured]);
+  }, [featured, currentPage]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   if (loading) {
     return (
@@ -73,7 +90,7 @@ const Certificates = ({ featured = false }) => {
         gutterBottom
         sx={{ fontWeight: 800, letterSpacing: 1, color: theme.palette.primary.main, mb: 6 }}
       >
-        Certificates
+        {/* Certificates */}
       </Typography>
       <Grid container spacing={5}>
         {certificates.map((certificate) => (
@@ -140,6 +157,39 @@ const Certificates = ({ featured = false }) => {
           </Grid>
         ))}
       </Grid>
+      
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" alignItems="center" mt={6} gap={2}>
+          <IconButton
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            sx={{
+              color: theme.palette.primary.main,
+              '&:disabled': {
+                color: theme.palette.text.disabled
+              }
+            }}
+          >
+            <NavigateBeforeIcon />
+          </IconButton>
+          <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+            Page {currentPage} of {totalPages} ({totalItems} total certificates)
+          </Typography>
+          <IconButton
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            sx={{
+              color: theme.palette.primary.main,
+              '&:disabled': {
+                color: theme.palette.text.disabled
+              }
+            }}
+          >
+            <NavigateNextIcon />
+          </IconButton>
+        </Box>
+      )}
     </Container>
   );
 };

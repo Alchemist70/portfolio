@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -18,6 +18,8 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
 
@@ -27,6 +29,10 @@ const ProjectsManager = () => {
   const [error, setError] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
   const { token } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -39,18 +45,33 @@ const ProjectsManager = () => {
     featured: false
   });
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
-      const response = await api.get('/projects');
-      setProjects(response.data.items);
+      const response = await api.get(`/projects?page=${currentPage}&size=${itemsPerPage}`);
+      const data = response.data;
+      setProjects(Array.isArray(data.items) ? data.items : []);
+      setTotalPages(data.pagination?.totalPages || 1);
+      setTotalItems(data.pagination?.totalItems || 0);
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch projects');
       setLoading(false);
+    }
+  }, [currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -197,6 +218,29 @@ const ProjectsManager = () => {
           </Grid>
         ))}
       </Grid>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" alignItems="center" mt={4} gap={2}>
+          <IconButton
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            color="primary"
+          >
+            <NavigateBeforeIcon />
+          </IconButton>
+          <Typography variant="body1" color="text.secondary">
+            Page {currentPage} of {totalPages} ({totalItems} total projects)
+          </Typography>
+          <IconButton
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            color="primary"
+          >
+            <NavigateNextIcon />
+          </IconButton>
+        </Box>
+      )}
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>

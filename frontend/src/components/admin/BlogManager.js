@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -24,6 +24,8 @@ import {
   InputLabel
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { api } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -33,6 +35,10 @@ const BlogManager = () => {
   const [error, setError] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
   const { token } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
@@ -58,26 +64,36 @@ const BlogManager = () => {
     'Personal'
   ];
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
-      const response = await api.get('/blog');
+      const response = await api.get(`/blog?page=${currentPage}&size=${itemsPerPage}`);
       const data = response.data;
-      setPosts(
-        Array.isArray(data)
-          ? data
-          : data.items || data.data || []
-      );
+      setPosts(Array.isArray(data.items) ? data.items : []);
+      setTotalPages(data.pagination?.totalPages || 1);
+      setTotalItems(data.pagination?.totalItems || 0);
       setError('');
     } catch (err) {
       setError('Failed to fetch blog posts');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [fetchPosts]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const handleOpenDialog = (post = null) => {
     if (post) {
@@ -282,6 +298,31 @@ const BlogManager = () => {
           </Grid>
         ))}
       </Grid>
+
+      {/* Pagination Controls */}
+      <Box display="flex" justifyContent="center" mt={2}>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handlePrevPage}
+          disabled={currentPage === 1}
+          startIcon={<NavigateBeforeIcon />}
+        >
+          Previous
+        </Button>
+        <Typography variant="body1" sx={{ mx: 2, alignSelf: 'center' }}>
+          Page {currentPage} of {totalPages} ({totalItems} total posts)
+        </Typography>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleNextPage}
+          disabled={currentPage === totalPages}
+          startIcon={<NavigateNextIcon />}
+        >
+          Next
+        </Button>
+      </Box>
 
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <form onSubmit={handleSubmit}>

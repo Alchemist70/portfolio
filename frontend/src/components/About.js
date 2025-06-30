@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Avatar, Grid, Chip, Paper, Button, Stack, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, Avatar, Grid, Chip, Paper, Button, CircularProgress, Alert } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { api } from '../services/api';
 
@@ -53,11 +53,22 @@ const About = () => {
             <Typography variant="body1" sx={{ mb: 2, fontSize: '1.1rem', opacity: 0.9 }}>
               <b>Values:</b> {about.values}
             </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
+            <Box
+              display="flex"
+              flexWrap="wrap"
+              gap={1.5}         // horizontal and vertical gap
+              sx={{ mb: 2 }}
+            >
               {about.skills && about.skills.map((skill) => (
-                <Chip key={skill} label={skill} color="secondary" sx={{ mb: 1 }} />
+                <Chip
+                  key={skill}
+                  label={skill}
+                  color="secondary"
+                  sx={{ fontWeight: 500 }}
+                />
               ))}
-            </Stack>
+            </Box>
+
             <Button
               variant="contained"
               color="secondary"

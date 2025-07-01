@@ -10,6 +10,8 @@ import {
   Alert,
   Avatar,
   Button,
+  TextField,
+  Stack,
 } from "@mui/material";
 import { useAuth } from "../../contexts/AuthContext";
 import ProjectsManager from "./ProjectsManager";
@@ -23,6 +25,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [currentTab, setCurrentTab] = useState(0);
   const [photo, setPhoto] = useState(localStorage.getItem("adminPhoto") || "");
+  const [photoUrlInput, setPhotoUrlInput] = useState("");
 
   useEffect(() => {
     // Update localStorage when photo changes
@@ -45,6 +48,15 @@ const Dashboard = () => {
       } catch (err) {
         alert("Failed to upload photo");
       }
+    }
+  };
+
+  const handlePhotoUrlSubmit = (e) => {
+    e.preventDefault();
+    if (photoUrlInput) {
+      setPhoto(photoUrlInput);
+      localStorage.setItem("adminPhoto", photoUrlInput);
+      setPhotoUrlInput("");
     }
   };
 
@@ -90,25 +102,64 @@ const Dashboard = () => {
                 border: "4px solid #fff",
               }}
             />
-            <Button
-              variant="outlined"
-              component="label"
-              sx={{
-                mb: 2,
-                color: "#fff",
-                borderColor: "#fff",
-                fontWeight: 600,
-                borderRadius: 8,
-              }}
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              sx={{ mb: 2 }}
             >
-              Upload Photo
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handlePhotoChange}
-              />
-            </Button>
+              <Button
+                variant="outlined"
+                component="label"
+                sx={{
+                  color: "#fff",
+                  borderColor: "#fff",
+                  fontWeight: 600,
+                  borderRadius: 8,
+                }}
+              >
+                Upload Photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={handlePhotoChange}
+                />
+              </Button>
+              <Box
+                component="form"
+                onSubmit={handlePhotoUrlSubmit}
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  placeholder="Paste image URL"
+                  value={photoUrlInput}
+                  onChange={(e) => setPhotoUrlInput(e.target.value)}
+                  sx={{
+                    background: "#fff",
+                    borderRadius: 2,
+                    mr: 1,
+                    minWidth: 200,
+                  }}
+                  InputProps={{ style: { color: "#1976d2" } }}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    background:
+                      "linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)",
+                  }}
+                >
+                  Use URL
+                </Button>
+              </Box>
+            </Stack>
             <Typography
               variant="h4"
               gutterBottom

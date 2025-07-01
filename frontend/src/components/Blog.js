@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -12,14 +12,14 @@ import {
   CircularProgress,
   Alert,
   Paper,
-  IconButton
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { motion } from 'framer-motion';
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { api } from '../services/api';
+  IconButton,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { motion } from "framer-motion";
+import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { api } from "../services/api";
 
 const MotionCard = motion(Card);
 
@@ -36,14 +36,18 @@ const Blog = ({ featured = false }) => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await api.get(`/blog?page=${currentPage}&size=${itemsPerPage}${featured ? '&featured=true' : ''}`);
+        const response = await api.get(
+          `/blog?page=${currentPage}&size=${itemsPerPage}${
+            featured ? "&featured=true" : ""
+          }`
+        );
         const data = response.data;
         setPosts(Array.isArray(data.items) ? data.items : []);
         setTotalPages(data.pagination?.totalPages || 1);
         setTotalItems(data.pagination?.totalItems || 0);
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch blog posts');
+        setError("Failed to fetch blog posts");
         setLoading(false);
       }
     };
@@ -77,12 +81,26 @@ const Blog = ({ featured = false }) => {
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
       <Box sx={{ mb: 5 }}>
-        <Paper elevation={4} sx={{ p: 3, borderRadius: 4, background: 'linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)', color: '#fff', mb: 4 }}>
+        <Paper
+          elevation={4}
+          sx={{
+            p: 3,
+            borderRadius: 4,
+            background: "linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)",
+            color: "#fff",
+            mb: 4,
+          }}
+        >
           <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
             Blog
           </Typography>
-          <Typography variant="body1" sx={{ fontSize: '1.1rem', opacity: 0.95 }}>
-            Dive into my blog for insights, technical writing, and thought leadership on software development, emerging technologies, and personal growth in tech.
+          <Typography
+            variant="body1"
+            sx={{ fontSize: "1.1rem", opacity: 0.95 }}
+          >
+            Dive into my blog for insights, technical writing, and thought
+            leadership on software development, emerging technologies, and
+            personal growth in tech.
           </Typography>
         </Paper>
       </Box>
@@ -91,26 +109,39 @@ const Blog = ({ featured = false }) => {
         component="h2"
         align="center"
         gutterBottom
-        sx={{ fontWeight: 800, letterSpacing: 1, color: theme.palette.primary.main, mb: 6 }}
-      >
-        Blog
-      </Typography>
+        sx={{
+          fontWeight: 800,
+          letterSpacing: 1,
+          color: theme.palette.primary.main,
+          mb: 6,
+        }}
+      ></Typography>
       <Grid container spacing={5}>
         {posts.map((post) => (
           <Grid item key={post._id} xs={12} sm={6} md={4}>
             <MotionCard
-              whileHover={{ scale: 1.04, boxShadow: theme.palette.mode === 'dark' ? '0 8px 32px 0 rgba(33,150,243,0.28)' : '0 8px 32px 0 rgba(33,150,243,0.18)' }}
-              transition={{ type: 'spring', stiffness: 300 }}
+              whileHover={{
+                scale: 1.04,
+                boxShadow:
+                  theme.palette.mode === "dark"
+                    ? "0 8px 32px 0 rgba(33,150,243,0.28)"
+                    : "0 8px 32px 0 rgba(33,150,243,0.18)",
+              }}
+              transition={{ type: "spring", stiffness: 300 }}
               elevation={8}
               sx={{
                 borderRadius: 5,
-                background: theme.palette.mode === 'dark'
-                  ? 'linear-gradient(135deg, #23263a 0%, #181c24 100%)'
-                  : 'linear-gradient(135deg, #f4f7fa 0%, #e0e7ef 100%)',
+                background:
+                  theme.palette.mode === "dark"
+                    ? "linear-gradient(135deg, #23263a 0%, #181c24 100%)"
+                    : "linear-gradient(135deg, #f4f7fa 0%, #e0e7ef 100%)",
                 color: theme.palette.text.primary,
-                boxShadow: theme.palette.mode === 'dark' ? '0 4px 24px 0 rgba(0,0,0,0.28)' : '0 4px 24px 0 rgba(60, 72, 88, 0.10)',
-                display: 'flex',
-                flexDirection: 'column',
+                boxShadow:
+                  theme.palette.mode === "dark"
+                    ? "0 4px 24px 0 rgba(0,0,0,0.28)"
+                    : "0 4px 24px 0 rgba(60, 72, 88, 0.10)",
+                display: "flex",
+                flexDirection: "column",
                 minHeight: 420,
               }}
             >
@@ -120,33 +151,51 @@ const Blog = ({ featured = false }) => {
                   src={post.imageUrl}
                   alt={post.title}
                   sx={{
-                    width: '100%',
+                    width: "100%",
                     height: 180,
-                    objectFit: 'cover',
+                    objectFit: "cover",
                     borderTopLeftRadius: 20,
                     borderTopRightRadius: 20,
                   }}
                 />
               )}
               <CardContent sx={{ flexGrow: 1 }}>
-                <Typography gutterBottom variant="h5" component="h3" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="h3"
+                  sx={{ fontWeight: 700, color: theme.palette.primary.main }}
+                >
                   {post.title}
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                <Typography
+                  variant="body2"
+                  sx={{ mb: 2, color: theme.palette.text.secondary }}
+                >
                   {post.excerpt}
                 </Typography>
                 <Box sx={{ mt: 2, mb: 1 }}>
-                  {Array.isArray(post.tags) && post.tags.map((tag) => (
-                    <Chip
-                      key={tag}
-                      label={tag}
-                      size="small"
-                      sx={{ mr: 1, mb: 1, fontWeight: 600, background: theme.palette.mode === 'dark' ? '#23263a' : '#e0e7ef', color: theme.palette.primary.main }}
-                    />
-                  ))}
+                  {Array.isArray(post.tags) &&
+                    post.tags.map((tag) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        size="small"
+                        sx={{
+                          mr: 1,
+                          mb: 1,
+                          fontWeight: 600,
+                          background:
+                            theme.palette.mode === "dark"
+                              ? "#23263a"
+                              : "#e0e7ef",
+                          color: theme.palette.primary.main,
+                        }}
+                      />
+                    ))}
                 </Box>
               </CardContent>
-              <CardActions sx={{ justifyContent: 'flex-end', px: 2, pb: 2 }}>
+              <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>
                 {post.link && (
                   <Button
                     size="small"
@@ -165,23 +214,32 @@ const Blog = ({ featured = false }) => {
           </Grid>
         ))}
       </Grid>
-      
+
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <Box display="flex" justifyContent="center" alignItems="center" mt={6} gap={2}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          mt={6}
+          gap={2}
+        >
           <IconButton
             onClick={handlePrevPage}
             disabled={currentPage === 1}
             sx={{
               color: theme.palette.primary.main,
-              '&:disabled': {
-                color: theme.palette.text.disabled
-              }
+              "&:disabled": {
+                color: theme.palette.text.disabled,
+              },
             }}
           >
             <NavigateBeforeIcon />
           </IconButton>
-          <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+          <Typography
+            variant="body1"
+            sx={{ color: theme.palette.text.secondary }}
+          >
             Page {currentPage} of {totalPages} ({totalItems} total posts)
           </Typography>
           <IconButton
@@ -189,9 +247,9 @@ const Blog = ({ featured = false }) => {
             disabled={currentPage === totalPages}
             sx={{
               color: theme.palette.primary.main,
-              '&:disabled': {
-                color: theme.palette.text.disabled
-              }
+              "&:disabled": {
+                color: theme.palette.text.disabled,
+              },
             }}
           >
             <NavigateNextIcon />
@@ -202,4 +260,4 @@ const Blog = ({ featured = false }) => {
   );
 };
 
-export default Blog; 
+export default Blog;

@@ -29,6 +29,7 @@ const AboutManager = () => {
   const [success, setSuccess] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
   const [photoUrlInput, setPhotoUrlInput] = useState("");
+  const [aboutPhotoUrlInput, setAboutPhotoUrlInput] = useState("");
 
   useEffect(() => {
     const fetchAbout = async () => {
@@ -80,11 +81,11 @@ const AboutManager = () => {
     }
   };
 
-  const handlePhotoUrlSubmit = (e) => {
+  const handleAboutPhotoUrlSubmit = (e) => {
     e.preventDefault();
-    if (photoUrlInput) {
-      setForm((prev) => ({ ...prev, photoUrl: photoUrlInput }));
-      setPhotoUrlInput("");
+    if (aboutPhotoUrlInput) {
+      setForm((prev) => ({ ...prev, photoUrl: aboutPhotoUrlInput }));
+      setAboutPhotoUrlInput("");
     }
   };
 
@@ -209,15 +210,15 @@ const AboutManager = () => {
               )}
               <Box
                 component="form"
-                onSubmit={handlePhotoUrlSubmit}
+                onSubmit={handleAboutPhotoUrlSubmit}
                 sx={{ display: "flex", alignItems: "center" }}
               >
                 <TextField
                   size="small"
                   variant="outlined"
                   placeholder="Paste image URL"
-                  value={photoUrlInput}
-                  onChange={(e) => setPhotoUrlInput(e.target.value)}
+                  value={aboutPhotoUrlInput}
+                  onChange={(e) => setAboutPhotoUrlInput(e.target.value)}
                   sx={{
                     background: "#fff",
                     borderRadius: 2,

@@ -142,7 +142,8 @@ const ProjectsManager = () => {
         demoUrl: formData.demoUrl,
         technologies: formData.technologies
           .split(",")
-          .map((tech) => tech.trim()),
+          .map((tech) => tech.trim())
+          .filter(Boolean),
         featured: formData.featured,
       };
       if (editingProject) {

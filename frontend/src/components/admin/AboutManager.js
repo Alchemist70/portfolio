@@ -81,8 +81,7 @@ const AboutManager = () => {
     }
   };
 
-  const handleAboutPhotoUrlSubmit = async (e) => {
-    e.preventDefault();
+  const handleAboutPhotoUrlSubmit = async () => {
     if (aboutPhotoUrlInput) {
       setForm((prev) => ({ ...prev, photoUrl: aboutPhotoUrlInput }));
       setAboutPhotoUrlInput("");
@@ -225,11 +224,7 @@ const AboutManager = () => {
                   Save Photo
                 </Button>
               )}
-              <Box
-                component="form"
-                onSubmit={handleAboutPhotoUrlSubmit}
-                sx={{ display: "flex", alignItems: "center" }}
-              >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
                 <TextField
                   size="small"
                   variant="outlined"
@@ -245,7 +240,6 @@ const AboutManager = () => {
                   InputProps={{ style: { color: "#1976d2" } }}
                 />
                 <Button
-                  type="submit"
                   variant="contained"
                   size="small"
                   sx={{
@@ -254,6 +248,7 @@ const AboutManager = () => {
                     background:
                       "linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)",
                   }}
+                  onClick={handleAboutPhotoUrlSubmit}
                 >
                   Use URL
                 </Button>

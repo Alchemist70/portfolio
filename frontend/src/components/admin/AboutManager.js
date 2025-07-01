@@ -81,11 +81,28 @@ const AboutManager = () => {
     }
   };
 
-  const handleAboutPhotoUrlSubmit = (e) => {
+  const handleAboutPhotoUrlSubmit = async (e) => {
     e.preventDefault();
     if (aboutPhotoUrlInput) {
       setForm((prev) => ({ ...prev, photoUrl: aboutPhotoUrlInput }));
       setAboutPhotoUrlInput("");
+      // Immediately save the new photoUrl to the backend
+      try {
+        const payload = {
+          ...form,
+          photoUrl: aboutPhotoUrlInput,
+          skills: form.skills
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+        };
+        await api.post("/about", payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSuccess(true);
+      } catch (err) {
+        setError("Failed to save about info");
+      }
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Button,
@@ -17,18 +17,18 @@ import {
   Alert,
   CircularProgress,
   FormControlLabel,
-  Switch
-} from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { api } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+  Switch,
+} from "@mui/material";
+import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import { api } from "../../services/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 const CertificatesManager = () => {
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCertificate, setEditingCertificate] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,31 +37,37 @@ const CertificatesManager = () => {
   const itemsPerPage = 10;
   const { token } = useAuth();
   const [formData, setFormData] = useState({
-    title: '',
-    issuer: '',
-    issueDate: '',
-    expiryDate: '',
-    credentialUrl: '',
-    imageUrl: '',
-    description: '',
-    skills: '',
-    featured: false
+    title: "",
+    issuer: "",
+    issueDate: "",
+    expiryDate: "",
+    credentialUrl: "",
+    imageUrl: "",
+    description: "",
+    skills: "",
+    featured: false,
   });
 
   const fetchCertificates = useCallback(async () => {
     try {
-      const response = await api.get(`/certificates?page=${currentPage}&size=${itemsPerPage}`);
+      if (!token) {
+        setError("Session expired. Please log in again.");
+        return;
+      }
+      const response = await api.get(
+        `/certificates?page=${currentPage}&size=${itemsPerPage}`
+      );
       const data = response.data;
       setCertificates(Array.isArray(data.items) ? data.items : []);
       setTotalPages(data.pagination?.totalPages || 1);
       setTotalItems(data.pagination?.totalItems || 0);
-      setError('');
+      setError("");
     } catch (err) {
-      setError('Failed to fetch certificates');
+      setError("Failed to fetch certificates");
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, token]);
 
   useEffect(() => {
     fetchCertificates();
@@ -83,28 +89,34 @@ const CertificatesManager = () => {
     if (certificate) {
       setEditingCertificate(certificate);
       setFormData({
-        title: certificate.title || '',
-        issuer: certificate.issuer || '',
-        issueDate: certificate.issueDate ? certificate.issueDate.split('T')[0] : '',
-        expiryDate: certificate.expiryDate ? certificate.expiryDate.split('T')[0] : '',
-        credentialUrl: certificate.credentialUrl || '',
-        imageUrl: certificate.imageUrl || '',
-        description: certificate.description || '',
-        skills: Array.isArray(certificate.skills) ? certificate.skills.join(', ') : '',
-        featured: certificate.featured || false
+        title: certificate.title || "",
+        issuer: certificate.issuer || "",
+        issueDate: certificate.issueDate
+          ? certificate.issueDate.split("T")[0]
+          : "",
+        expiryDate: certificate.expiryDate
+          ? certificate.expiryDate.split("T")[0]
+          : "",
+        credentialUrl: certificate.credentialUrl || "",
+        imageUrl: certificate.imageUrl || "",
+        description: certificate.description || "",
+        skills: Array.isArray(certificate.skills)
+          ? certificate.skills.join(", ")
+          : "",
+        featured: certificate.featured || false,
       });
     } else {
       setEditingCertificate(null);
       setFormData({
-        title: '',
-        issuer: '',
-        issueDate: '',
-        expiryDate: '',
-        credentialUrl: '',
-        imageUrl: '',
-        description: '',
-        skills: '',
-        featured: false
+        title: "",
+        issuer: "",
+        issueDate: "",
+        expiryDate: "",
+        credentialUrl: "",
+        imageUrl: "",
+        description: "",
+        skills: "",
+        featured: false,
       });
     }
     setDialogOpen(true);
@@ -117,29 +129,36 @@ const CertificatesManager = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSkillsChange = (e) => {
-    const skills = e.target.value.split(',').map(skill => skill.trim());
-    setFormData(prev => ({
+    const skills = e.target.value.split(",").map((skill) => skill.trim());
+    setFormData((prev) => ({
       ...prev,
-      skills
+      skills,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted');
+    console.log("Form submitted");
     try {
+      if (!token) {
+        setError("Session expired. Please log in again.");
+        return;
+      }
       let skillsArray = [];
       if (Array.isArray(formData.skills)) {
         skillsArray = formData.skills;
-      } else if (typeof formData.skills === 'string') {
-        skillsArray = formData.skills.split(',').map(skill => skill.trim()).filter(Boolean);
+      } else if (typeof formData.skills === "string") {
+        skillsArray = formData.skills
+          .split(",")
+          .map((skill) => skill.trim())
+          .filter(Boolean);
       }
       const certificateData = {
         title: formData.title,
@@ -150,36 +169,40 @@ const CertificatesManager = () => {
         imageUrl: formData.imageUrl,
         description: formData.description,
         skills: skillsArray,
-        featured: formData.featured
+        featured: formData.featured,
       };
-      console.log('About to send API request', certificateData);
+      console.log("About to send API request", certificateData);
       if (editingCertificate) {
-        await api.patch(`/certificates/${editingCertificate._id}`, certificateData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.patch(
+          `/certificates/${editingCertificate._id}`,
+          certificateData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
       } else {
-        await api.post('/certificates', certificateData, {
-          headers: { Authorization: `Bearer ${token}` }
+        await api.post("/certificates", certificateData, {
+          headers: { Authorization: `Bearer ${token}` },
         });
       }
-      console.log('API request sent');
+      console.log("API request sent");
       handleCloseDialog();
       fetchCertificates();
     } catch (err) {
-      console.error('API error:', err);
-      setError(err.response?.data?.message || 'Failed to save certificate');
+      console.error("API error:", err);
+      setError(err.response?.data?.message || "Failed to save certificate");
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this certificate?')) {
+    if (window.confirm("Are you sure you want to delete this certificate?")) {
       try {
         await api.delete(`/certificates/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         fetchCertificates();
       } catch (err) {
-        setError('Failed to delete certificate');
+        setError("Failed to delete certificate");
       }
     }
   };
@@ -188,7 +211,12 @@ const CertificatesManager = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
         <CircularProgress />
       </Box>
     );
@@ -230,7 +258,9 @@ const CertificatesManager = () => {
                   {certificate.issuer}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {certificate.issueDate ? new Date(certificate.issueDate).toLocaleDateString() : ''}
+                  {certificate.issueDate
+                    ? new Date(certificate.issueDate).toLocaleDateString()
+                    : ""}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   Credential: {certificate.credentialUrl}
@@ -239,14 +269,15 @@ const CertificatesManager = () => {
                   {certificate.description}
                 </Typography>
                 <Box mt={1}>
-                  {Array.isArray(certificate.skills) && certificate.skills.map((skill, index) => (
-                    <Chip
-                      key={index}
-                      label={skill}
-                      size="small"
-                      sx={{ mr: 0.5, mb: 0.5 }}
-                    />
-                  ))}
+                  {Array.isArray(certificate.skills) &&
+                    certificate.skills.map((skill, index) => (
+                      <Chip
+                        key={index}
+                        label={skill}
+                        size="small"
+                        sx={{ mr: 0.5, mb: 0.5 }}
+                      />
+                    ))}
                 </Box>
                 <Box mt={2} display="flex" justifyContent="flex-end">
                   <IconButton
@@ -270,7 +301,13 @@ const CertificatesManager = () => {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <Box display="flex" justifyContent="center" alignItems="center" mt={4} gap={2}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          mt={4}
+          gap={2}
+        >
           <IconButton
             onClick={handlePrevPage}
             disabled={currentPage === 1}
@@ -291,10 +328,15 @@ const CertificatesManager = () => {
         </Box>
       )}
 
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
+        fullWidth
+      >
         <form onSubmit={handleSubmit}>
           <DialogTitle>
-            {editingCertificate ? 'Edit Certificate' : 'Add Certificate'}
+            {editingCertificate ? "Edit Certificate" : "Add Certificate"}
           </DialogTitle>
           <DialogContent>
             <Box sx={{ mt: 2 }}>
@@ -379,10 +421,12 @@ const CertificatesManager = () => {
                 control={
                   <Switch
                     checked={formData.featured}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      featured: e.target.checked
-                    }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        featured: e.target.checked,
+                      }))
+                    }
                     name="featured"
                   />
                 }
@@ -391,9 +435,11 @@ const CertificatesManager = () => {
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button type="button" onClick={handleCloseDialog}>Cancel</Button>
+            <Button type="button" onClick={handleCloseDialog}>
+              Cancel
+            </Button>
             <Button type="submit" variant="contained" color="primary">
-              {editingCertificate ? 'Update' : 'Add'}
+              {editingCertificate ? "Update" : "Add"}
             </Button>
           </DialogActions>
         </form>
@@ -402,4 +448,4 @@ const CertificatesManager = () => {
   );
 };
 
-export default CertificatesManager; 
+export default CertificatesManager;

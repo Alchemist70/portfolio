@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Button,
@@ -21,18 +21,18 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
-} from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { api } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+  InputLabel,
+} from "@mui/material";
+import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import { api } from "../../services/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 const BlogManager = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,43 +41,49 @@ const BlogManager = () => {
   const itemsPerPage = 10;
   const { token } = useAuth();
   const [formData, setFormData] = useState({
-    title: '',
-    slug: '',
-    excerpt: '',
-    content: '',
-    imageUrl: '',
-    date: '',
-    readTime: '',
-    category: '',
-    link: '',
-    tags: '',
-    featured: false
+    title: "",
+    slug: "",
+    excerpt: "",
+    content: "",
+    imageUrl: "",
+    date: "",
+    readTime: "",
+    category: "",
+    link: "",
+    tags: "",
+    featured: false,
   });
 
   const categories = [
-    'Technology',
-    'Programming',
-    'Web Development',
-    'Data Science',
-    'Machine Learning',
-    'Career',
-    'Personal'
+    "Technology",
+    "Programming",
+    "Web Development",
+    "Data Science",
+    "Machine Learning",
+    "Career",
+    "Personal",
   ];
 
   const fetchPosts = useCallback(async () => {
     try {
-      const response = await api.get(`/blog?page=${currentPage}&size=${itemsPerPage}`);
+      if (!token) {
+        setError("Session expired. Please log in again.");
+        return;
+      }
+      const response = await api.get(
+        `/blog?page=${currentPage}&size=${itemsPerPage}`
+      );
       const data = response.data;
       setPosts(Array.isArray(data.items) ? data.items : []);
       setTotalPages(data.pagination?.totalPages || 1);
       setTotalItems(data.pagination?.totalItems || 0);
-      setError('');
+      setError("");
     } catch (err) {
-      setError('Failed to fetch blog posts');
+      setError("Failed to fetch blog posts");
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, token]);
 
   useEffect(() => {
     fetchPosts();
@@ -99,32 +105,32 @@ const BlogManager = () => {
     if (post) {
       setEditingPost(post);
       setFormData({
-        title: post.title || '',
-        slug: post.slug || '',
-        excerpt: post.excerpt || '',
-        content: post.content || '',
-        imageUrl: post.imageUrl || '',
-        date: post.date ? post.date.split('T')[0] : '',
-        readTime: post.readTime || '',
-        category: post.category || '',
-        link: post.link || '',
-        tags: Array.isArray(post.tags) ? post.tags.join(', ') : '',
-        featured: post.featured || false
+        title: post.title || "",
+        slug: post.slug || "",
+        excerpt: post.excerpt || "",
+        content: post.content || "",
+        imageUrl: post.imageUrl || "",
+        date: post.date ? post.date.split("T")[0] : "",
+        readTime: post.readTime || "",
+        category: post.category || "",
+        link: post.link || "",
+        tags: Array.isArray(post.tags) ? post.tags.join(", ") : "",
+        featured: post.featured || false,
       });
     } else {
       setEditingPost(null);
       setFormData({
-        title: '',
-        slug: '',
-        excerpt: '',
-        content: '',
-        imageUrl: '',
-        date: '',
-        readTime: '',
-        category: '',
-        link: '',
-        tags: '',
-        featured: false
+        title: "",
+        slug: "",
+        excerpt: "",
+        content: "",
+        imageUrl: "",
+        date: "",
+        readTime: "",
+        category: "",
+        link: "",
+        tags: "",
+        featured: false,
       });
     }
     setDialogOpen(true);
@@ -137,36 +143,43 @@ const BlogManager = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleTagsChange = (e) => {
-    const tags = e.target.value.split(',').map(tag => tag.trim());
-    setFormData(prev => ({
+    const tags = e.target.value.split(",").map((tag) => tag.trim());
+    setFormData((prev) => ({
       ...prev,
-      tags
+      tags,
     }));
   };
 
   function generateSlug(title) {
     return title
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)+/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted');
+    console.log("Form submitted");
     try {
+      if (!token) {
+        setError("Session expired. Please log in again.");
+        return;
+      }
       let tagsArray = [];
       if (Array.isArray(formData.tags)) {
         tagsArray = formData.tags;
-      } else if (typeof formData.tags === 'string') {
-        tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(Boolean);
+      } else if (typeof formData.tags === "string") {
+        tagsArray = formData.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean);
       }
       const blogData = {
         title: formData.title,
@@ -179,36 +192,36 @@ const BlogManager = () => {
         category: formData.category,
         link: formData.link,
         tags: tagsArray,
-        featured: formData.featured
+        featured: formData.featured,
       };
-      console.log('About to send API request', blogData);
+      console.log("About to send API request", blogData);
       if (editingPost) {
         await api.patch(`/blog/${editingPost._id}`, blogData, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await api.post('/blog', blogData, {
-          headers: { Authorization: `Bearer ${token}` }
+        await api.post("/blog", blogData, {
+          headers: { Authorization: `Bearer ${token}` },
         });
       }
-      console.log('API request sent');
+      console.log("API request sent");
       handleCloseDialog();
       fetchPosts();
     } catch (err) {
-      console.error('API error:', err);
-      setError(err.response?.data?.message || 'Failed to save blog post');
+      console.error("API error:", err);
+      setError(err.response?.data?.message || "Failed to save blog post");
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this blog post?')) {
+    if (window.confirm("Are you sure you want to delete this blog post?")) {
       try {
         await api.delete(`/blog/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         fetchPosts();
       } catch (err) {
-        setError('Failed to delete blog post');
+        setError("Failed to delete blog post");
       }
     }
   };
@@ -217,7 +230,12 @@ const BlogManager = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
         <CircularProgress />
       </Box>
     );
@@ -259,7 +277,8 @@ const BlogManager = () => {
                   {post.excerpt}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {post.date ? new Date(post.date).toLocaleDateString() : ''} • {post.readTime}
+                  {post.date ? new Date(post.date).toLocaleDateString() : ""} •{" "}
+                  {post.readTime}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   Slug: {post.slug}
@@ -270,14 +289,15 @@ const BlogManager = () => {
                   sx={{ mr: 1, mb: 1 }}
                 />
                 <Box mt={1}>
-                  {Array.isArray(post.tags) && post.tags.map((tag, index) => (
-                    <Chip
-                      key={index}
-                      label={tag}
-                      size="small"
-                      sx={{ mr: 0.5, mb: 0.5 }}
-                    />
-                  ))}
+                  {Array.isArray(post.tags) &&
+                    post.tags.map((tag, index) => (
+                      <Chip
+                        key={index}
+                        label={tag}
+                        size="small"
+                        sx={{ mr: 0.5, mb: 0.5 }}
+                      />
+                    ))}
                 </Box>
                 <Box mt={2} display="flex" justifyContent="flex-end">
                   <IconButton
@@ -310,7 +330,7 @@ const BlogManager = () => {
         >
           Previous
         </Button>
-        <Typography variant="body1" sx={{ mx: 2, alignSelf: 'center' }}>
+        <Typography variant="body1" sx={{ mx: 2, alignSelf: "center" }}>
           Page {currentPage} of {totalPages} ({totalItems} total posts)
         </Typography>
         <Button
@@ -324,10 +344,15 @@ const BlogManager = () => {
         </Button>
       </Box>
 
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+      <Dialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+      >
         <form onSubmit={handleSubmit}>
           <DialogTitle>
-            {editingPost ? 'Edit Blog Post' : 'Add Blog Post'}
+            {editingPost ? "Edit Blog Post" : "Add Blog Post"}
           </DialogTitle>
           <DialogContent>
             <Box sx={{ mt: 2 }}>
@@ -440,10 +465,12 @@ const BlogManager = () => {
                 control={
                   <Switch
                     checked={formData.featured}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      featured: e.target.checked
-                    }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        featured: e.target.checked,
+                      }))
+                    }
                     name="featured"
                   />
                 }
@@ -452,9 +479,11 @@ const BlogManager = () => {
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button type="button" onClick={handleCloseDialog}>Cancel</Button>
+            <Button type="button" onClick={handleCloseDialog}>
+              Cancel
+            </Button>
             <Button type="submit" variant="contained" color="primary">
-              {editingPost ? 'Update' : 'Add'}
+              {editingPost ? "Update" : "Add"}
             </Button>
           </DialogActions>
         </form>
@@ -463,4 +492,4 @@ const BlogManager = () => {
   );
 };
 
-export default BlogManager; 
+export default BlogManager;

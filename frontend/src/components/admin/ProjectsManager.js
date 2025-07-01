@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Button,
@@ -15,13 +15,17 @@ import {
   IconButton,
   Chip,
   Alert,
-  CircularProgress
-} from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { useAuth } from '../../contexts/AuthContext';
-import { api } from '../../services/api';
+  CircularProgress,
+} from "@mui/material";
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Add as AddIcon,
+} from "@mui/icons-material";
+import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import { useAuth } from "../../contexts/AuthContext";
+import { api } from "../../services/api";
 
 const ProjectsManager = () => {
   const [projects, setProjects] = useState([]);
@@ -36,28 +40,34 @@ const ProjectsManager = () => {
   const { token } = useAuth();
 
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    imageUrl: '',
-    githubUrl: '',
-    demoUrl: '',
-    technologies: '',
-    featured: false
+    title: "",
+    description: "",
+    imageUrl: "",
+    githubUrl: "",
+    demoUrl: "",
+    technologies: "",
+    featured: false,
   });
 
   const fetchProjects = useCallback(async () => {
     try {
-      const response = await api.get(`/projects?page=${currentPage}&size=${itemsPerPage}`);
+      if (!token) {
+        setError("Session expired. Please log in again.");
+        return;
+      }
+      const response = await api.get(
+        `/projects?page=${currentPage}&size=${itemsPerPage}`
+      );
       const data = response.data;
       setProjects(Array.isArray(data.items) ? data.items : []);
       setTotalPages(data.pagination?.totalPages || 1);
       setTotalItems(data.pagination?.totalItems || 0);
       setLoading(false);
     } catch (err) {
-      setError('Failed to fetch projects');
+      setError("Failed to fetch projects");
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, token]);
 
   useEffect(() => {
     fetchProjects();
@@ -79,24 +89,26 @@ const ProjectsManager = () => {
     if (project) {
       setEditingProject(project);
       setFormData({
-        title: project.title || '',
-        description: project.description || '',
-        imageUrl: project.imageUrl || '',
-        githubUrl: project.githubUrl || '',
-        demoUrl: project.demoUrl || '',
-        technologies: Array.isArray(project.technologies) ? project.technologies.join(', ') : '',
-        featured: project.featured || false
+        title: project.title || "",
+        description: project.description || "",
+        imageUrl: project.imageUrl || "",
+        githubUrl: project.githubUrl || "",
+        demoUrl: project.demoUrl || "",
+        technologies: Array.isArray(project.technologies)
+          ? project.technologies.join(", ")
+          : "",
+        featured: project.featured || false,
       });
     } else {
       setEditingProject(null);
       setFormData({
-        title: '',
-        description: '',
-        imageUrl: '',
-        githubUrl: '',
-        demoUrl: '',
-        technologies: '',
-        featured: false
+        title: "",
+        description: "",
+        imageUrl: "",
+        githubUrl: "",
+        demoUrl: "",
+        technologies: "",
+        featured: false,
       });
     }
     setOpenDialog(true);
@@ -109,49 +121,55 @@ const ProjectsManager = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (!token) {
+        setError("Session expired. Please log in again.");
+        return;
+      }
       const projectData = {
         title: formData.title,
         description: formData.description,
         imageUrl: formData.imageUrl,
         githubUrl: formData.githubUrl,
         demoUrl: formData.demoUrl,
-        technologies: formData.technologies.split(',').map(tech => tech.trim()),
-        featured: formData.featured
+        technologies: formData.technologies
+          .split(",")
+          .map((tech) => tech.trim()),
+        featured: formData.featured,
       };
       if (editingProject) {
         await api.patch(`/projects/${editingProject._id}`, projectData, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await api.post('/projects', projectData, {
-          headers: { Authorization: `Bearer ${token}` }
+        await api.post("/projects", projectData, {
+          headers: { Authorization: `Bearer ${token}` },
         });
       }
       handleCloseDialog();
       fetchProjects();
     } catch (err) {
-      setError('Failed to save project');
+      setError("Failed to save project");
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
+    if (window.confirm("Are you sure you want to delete this project?")) {
       try {
         await api.delete(`/projects/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         fetchProjects();
       } catch (err) {
-        setError('Failed to delete project');
+        setError("Failed to delete project");
       }
     }
   };
@@ -221,7 +239,13 @@ const ProjectsManager = () => {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <Box display="flex" justifyContent="center" alignItems="center" mt={4} gap={2}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          mt={4}
+          gap={2}
+        >
           <IconButton
             onClick={handlePrevPage}
             disabled={currentPage === 1}
@@ -242,9 +266,14 @@ const ProjectsManager = () => {
         </Box>
       )}
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>
-          {editingProject ? 'Edit Project' : 'Add New Project'}
+          {editingProject ? "Edit Project" : "Add New Project"}
         </DialogTitle>
         <DialogContent>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
@@ -315,7 +344,7 @@ const ProjectsManager = () => {
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained" color="primary">
-            {editingProject ? 'Update' : 'Create'}
+            {editingProject ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -323,4 +352,4 @@ const ProjectsManager = () => {
   );
 };
 
-export default ProjectsManager; 
+export default ProjectsManager;

@@ -212,7 +212,7 @@ const BlogPostDetail = () => {
           >
             <Typography
               variant="subtitle2"
-              sx={{ fontWeight: 700, color: "#1976d2" }}
+              sx={{ fontWeight: 700, color: "23263a" }}
             >
               {c.name}
             </Typography>

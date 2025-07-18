@@ -115,11 +115,12 @@ const BlogPostDetail = () => {
     <Paper
       elevation={8}
       sx={{
-        p: { xs: 3, md: 6 },
-        maxWidth: 900,
+        p: { xs: 2, sm: 3, md: 6 },
+        maxWidth: { xs: "100%", sm: 600, md: 900 },
+        width: "100%",
         mx: "auto",
-        mt: 6,
-        borderRadius: 6,
+        mt: { xs: 2, md: 6 },
+        borderRadius: { xs: 0, sm: 4, md: 6 },
         background: "linear-gradient(120deg, #23263a 0%, #00bcd4 100%)",
         color: "#fff",
         boxShadow: "0 8px 32px 0 rgba(60, 72, 88, 0.18)",
@@ -133,22 +134,38 @@ const BlogPostDetail = () => {
           letterSpacing: 1,
           color: "#fff",
           textShadow: "0 2px 16px rgba(0,0,0,0.18)",
+          fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
+          lineHeight: 1.1,
+          wordBreak: "break-word",
         }}
       >
         {post.title}
       </Typography>
-      <Box display="flex" alignItems="center" gap={2} mb={2}>
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        gap={2}
+        mb={2}
+      >
         <Chip
           label={post.category}
           color="secondary"
           sx={{
             fontWeight: 700,
-            fontSize: "1rem",
+            fontSize: { xs: "0.9rem", sm: "1rem" },
             background: "#fff",
             color: "#1976d2",
           }}
         />
-        <Typography variant="body1" sx={{ color: "#e0e0e0", fontWeight: 500 }}>
+        <Typography
+          variant="body1"
+          sx={{
+            color: "#e0e0e0",
+            fontWeight: 500,
+            fontSize: { xs: "0.95rem", sm: "1.05rem" },
+          }}
+        >
           {post.date ? new Date(post.date).toLocaleDateString() : ""} •{" "}
           {post.readTime}
         </Typography>
@@ -165,7 +182,7 @@ const BlogPostDetail = () => {
             {comments.length}
           </Typography>
         </Box>
-        <Box ml="auto">
+        <Box ml={{ xs: 0, sm: "auto" }}>
           <Typography variant="body2" sx={{ color: "#fff", fontWeight: 700 }}>
             Read By: {userCount}
           </Typography>
@@ -178,7 +195,7 @@ const BlogPostDetail = () => {
           alt={post.title}
           sx={{
             width: "100%",
-            maxHeight: 400,
+            maxHeight: { xs: 180, sm: 300, md: 400 },
             objectFit: "cover",
             borderRadius: 4,
             mb: 4,
@@ -190,10 +207,11 @@ const BlogPostDetail = () => {
         variant="body1"
         sx={{
           color: "#e0e0e0",
-          fontSize: "1.2rem",
+          fontSize: { xs: "1rem", sm: "1.1rem", md: "1.2rem" },
           mb: 4,
           lineHeight: 1.8,
           fontFamily: "Roboto, Arial, sans-serif",
+          wordBreak: "break-word",
         }}
       >
         {post.content}

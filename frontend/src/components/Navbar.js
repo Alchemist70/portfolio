@@ -36,7 +36,7 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
             mb: { xs: 1, sm: 0 },
           }}
         >
-          Portfolio
+          My Portfolio
         </Typography>
 
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: { xs: 1, sm: 2 } }}>

@@ -221,4 +221,25 @@ router.get("/:id/comments", apiLimiter, async (req, res) => {
   }
 });
 
+// Delete a comment from a blog post (admin only)
+router.delete("/:id/comment/:commentId", auth, apiLimiter, async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Admin privileges required" });
+    }
+    const post = await Blog.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Blog post not found" });
+    const commentIndex = post.comments.findIndex(
+      (c) => c._id.toString() === req.params.commentId
+    );
+    if (commentIndex === -1)
+      return res.status(404).json({ message: "Comment not found" });
+    post.comments.splice(commentIndex, 1);
+    await post.save();
+    res.json({ message: "Comment deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

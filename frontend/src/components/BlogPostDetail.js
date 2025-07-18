@@ -13,6 +13,8 @@ import {
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { TextField } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useAuth } from "../contexts/AuthContext";
 
 const BlogPostDetail = () => {
   const { slugOrId } = useParams();
@@ -25,6 +27,8 @@ const BlogPostDetail = () => {
   const [commentName, setCommentName] = useState("");
   const [commentText, setCommentText] = useState("");
   const [userCount, setUserCount] = useState(0);
+
+  const { user, token } = useAuth ? useAuth() : { user: null, token: null };
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -90,6 +94,17 @@ const BlogPostDetail = () => {
       setComments(refreshed.data);
       setCommentName("");
       setCommentText("");
+    } catch {}
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!token) return;
+    try {
+      await api.delete(`/blog/${post._id}/comment/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const refreshed = await api.get(`/blog/${post._id}/comments`);
+      setComments(refreshed.data);
     } catch {}
   };
 
@@ -209,11 +224,12 @@ const BlogPostDetail = () => {
               mb: 2,
               background: "rgba(255,255,255,0.10)",
               color: "#23263a",
+              position: "relative",
             }}
           >
             <Typography
               variant="subtitle2"
-              sx={{ fontWeight: 700, color: "23263a" }}
+              sx={{ fontWeight: 700, color: "#23263a" }}
             >
               {c.name}
             </Typography>
@@ -226,6 +242,19 @@ const BlogPostDetail = () => {
             <Typography variant="caption" sx={{ color: "#e0e0e0" }}>
               {new Date(c.date).toLocaleString()}
             </Typography>
+            {user && user.role === "admin" && (
+              <DeleteIcon
+                onClick={() => handleDeleteComment(c._id)}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  color: "#d32f2f",
+                  cursor: "pointer",
+                }}
+                titleAccess="Delete comment"
+              />
+            )}
           </Paper>
         ))}
         <Box

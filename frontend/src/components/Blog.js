@@ -20,6 +20,7 @@ import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { api } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const MotionCard = motion(Card);
 
@@ -32,6 +33,7 @@ const Blog = ({ featured = false }) => {
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
   const theme = useTheme();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -196,19 +198,15 @@ const Blog = ({ featured = false }) => {
                 </Box>
               </CardContent>
               <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>
-                {post.link && (
-                  <Button
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                    startIcon={<OpenInNewIcon />}
-                    href={post.link}
-                    target="_blank"
-                    sx={{ borderRadius: 8, fontWeight: 600 }}
-                  >
-                    Read More
-                  </Button>
-                )}
+                <Button
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  sx={{ borderRadius: 8, fontWeight: 600 }}
+                  onClick={() => navigate(`/blog/${post.slug || post._id}`)}
+                >
+                  Read More
+                </Button>
               </CardActions>
             </MotionCard>
           </Grid>

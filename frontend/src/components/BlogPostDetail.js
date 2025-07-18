@@ -157,7 +157,7 @@ const BlogPostDetail = () => {
         </Box>
         <Box ml="auto">
           <Typography variant="body2" sx={{ color: "#fff", fontWeight: 700 }}>
-            Users: {userCount}
+            Read By: {userCount}
           </Typography>
         </Box>
       </Box>

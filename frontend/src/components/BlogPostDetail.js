@@ -206,17 +206,23 @@ const BlogPostDetail = () => {
             sx={{
               p: 2,
               mb: 2,
-              background: "rgba(255,255,255,0.05)",
-              color: "#fff",
+              background: "rgba(255,255,255,0.10)",
+              color: "#23263a",
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 700, color: "#1976d2" }}
+            >
               {c.name}
             </Typography>
-            <Typography variant="body2" sx={{ color: "#b0b8c1" }}>
+            <Typography
+              variant="body2"
+              sx={{ color: "#23263a", fontSize: "1.08rem", fontWeight: 500 }}
+            >
               {c.text}
             </Typography>
-            <Typography variant="caption" sx={{ color: "#b0b8c1" }}>
+            <Typography variant="caption" sx={{ color: "#607d8b" }}>
               {new Date(c.date).toLocaleString()}
             </Typography>
           </Paper>
@@ -231,6 +237,7 @@ const BlogPostDetail = () => {
         >
           <TextField
             label="Your Name"
+            placeholder="Name"
             value={commentName}
             onChange={(e) => setCommentName(e.target.value)}
             required
@@ -239,6 +246,7 @@ const BlogPostDetail = () => {
           />
           <TextField
             label="Your Comment"
+            placeholder="Write your comment"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             required

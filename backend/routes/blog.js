@@ -171,4 +171,54 @@ router.delete("/:id", [auth, apiLimiter], async (req, res) => {
   }
 });
 
+// Like/unlike a blog post
+router.post("/:id/like", apiLimiter, async (req, res) => {
+  try {
+    const post = await Blog.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Blog post not found" });
+    const userId = req.body.userId || req.ip;
+    const index = post.likedBy.indexOf(userId);
+    if (index === -1) {
+      post.likedBy.push(userId);
+      post.likes += 1;
+    } else {
+      post.likedBy.splice(index, 1);
+      post.likes -= 1;
+    }
+    await post.save();
+    res.json({ likes: post.likes, liked: index === -1 });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Add a comment to a blog post
+router.post("/:id/comment", apiLimiter, async (req, res) => {
+  try {
+    const post = await Blog.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Blog post not found" });
+    const { name, text } = req.body;
+    if (!name || !text)
+      return res
+        .status(400)
+        .json({ message: "Name and comment text are required" });
+    post.comments.push({ name, text });
+    await post.save();
+    res.status(201).json(post.comments[post.comments.length - 1]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get comments for a blog post
+router.get("/:id/comments", apiLimiter, async (req, res) => {
+  try {
+    const post = await Blog.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Blog post not found" });
+    res.json(post.comments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

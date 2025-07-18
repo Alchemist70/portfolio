@@ -10,12 +10,21 @@ import {
   Paper,
   Button,
 } from "@mui/material";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import { TextField } from "@mui/material";
 
 const BlogPostDetail = () => {
   const { slugOrId } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [likes, setLikes] = useState(0);
+  const [liked, setLiked] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [commentName, setCommentName] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -23,14 +32,65 @@ const BlogPostDetail = () => {
         // Try fetching by slug first, then by id if not found
         let res = await api.get(`/blog/${slugOrId}`);
         setPost(res.data);
+        setLikes(res.data.likes || 0);
+        setLiked(
+          res.data.likedBy &&
+            res.data.likedBy.includes(localStorage.getItem("userId") || "guest")
+        );
       } catch (err) {
         setError("Blog post not found.");
       } finally {
         setLoading(false);
       }
     };
+    const fetchComments = async () => {
+      try {
+        const res = await api.get(`/blog/${slugOrId}/comments`);
+        setComments(res.data);
+      } catch {}
+    };
+    const fetchUserCount = async () => {
+      try {
+        const res = await api.get("/auth/users/count");
+        setUserCount(res.data.count);
+      } catch {}
+    };
     fetchPost();
+    fetchComments();
+    fetchUserCount();
   }, [slugOrId]);
+
+  useEffect(() => {
+    if (!localStorage.getItem("userId")) {
+      localStorage.setItem(
+        "userId",
+        "user-" + Math.random().toString(36).substr(2, 9)
+      );
+    }
+  }, []);
+
+  const handleLike = async () => {
+    const userId = localStorage.getItem("userId") || "guest";
+    try {
+      const res = await api.post(`/blog/${post._id}/like`, { userId });
+      setLikes(res.data.likes);
+      setLiked(res.data.liked);
+    } catch {}
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (!commentName.trim() || !commentText.trim()) return;
+    try {
+      const res = await api.post(`/blog/${post._id}/comment`, {
+        name: commentName,
+        text: commentText,
+      });
+      setComments([...comments, res.data]);
+      setCommentName("");
+      setCommentText("");
+    } catch {}
+  };
 
   if (loading)
     return (
@@ -82,6 +142,24 @@ const BlogPostDetail = () => {
           {post.date ? new Date(post.date).toLocaleDateString() : ""} •{" "}
           {post.readTime}
         </Typography>
+        <Box display="flex" alignItems="center" gap={1}>
+          <ThumbUpIcon
+            sx={{ color: liked ? "#00bcd4" : "#fff", cursor: "pointer" }}
+            onClick={handleLike}
+          />
+          <Typography variant="body2" sx={{ color: "#fff", fontWeight: 700 }}>
+            {likes}
+          </Typography>
+          <ChatBubbleOutlineIcon sx={{ color: "#fff", ml: 2 }} />
+          <Typography variant="body2" sx={{ color: "#fff", fontWeight: 700 }}>
+            {comments.length}
+          </Typography>
+        </Box>
+        <Box ml="auto">
+          <Typography variant="body2" sx={{ color: "#fff", fontWeight: 700 }}>
+            Users: {userCount}
+          </Typography>
+        </Box>
       </Box>
       {post.imageUrl && (
         <Box
@@ -110,6 +188,78 @@ const BlogPostDetail = () => {
       >
         {post.content}
       </Typography>
+      <Typography
+        variant="h4"
+        sx={{ color: "#fff", fontWeight: 700, mt: 6, mb: 2 }}
+      >
+        Comments
+      </Typography>
+      <Box mb={4}>
+        {comments.length === 0 && (
+          <Typography sx={{ color: "#e0e0e0" }}>
+            No comments yet. Be the first to comment!
+          </Typography>
+        )}
+        {comments.map((c, i) => (
+          <Paper
+            key={i}
+            sx={{
+              p: 2,
+              mb: 2,
+              background: "rgba(255,255,255,0.05)",
+              color: "#fff",
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              {c.name}
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#b0b8c1" }}>
+              {c.text}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#b0b8c1" }}>
+              {new Date(c.date).toLocaleString()}
+            </Typography>
+          </Paper>
+        ))}
+        <Box
+          component="form"
+          onSubmit={handleAddComment}
+          mt={2}
+          display="flex"
+          flexDirection="column"
+          gap={2}
+        >
+          <TextField
+            label="Your Name"
+            value={commentName}
+            onChange={(e) => setCommentName(e.target.value)}
+            required
+            sx={{ background: "#fff", borderRadius: 2 }}
+            InputProps={{ style: { color: "#1976d2" } }}
+          />
+          <TextField
+            label="Your Comment"
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            required
+            multiline
+            rows={3}
+            sx={{ background: "#fff", borderRadius: 2 }}
+            InputProps={{ style: { color: "#1976d2" } }}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{
+              borderRadius: 8,
+              fontWeight: 700,
+              background: "linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)",
+            }}
+          >
+            Add Comment
+          </Button>
+        </Box>
+      </Box>
       <Button
         component={RouterLink}
         to="/blog"

@@ -222,7 +222,7 @@ const BlogPostDetail = () => {
             >
               {c.text}
             </Typography>
-            <Typography variant="caption" sx={{ color: "#607d8b" }}>
+            <Typography variant="caption" sx={{ color: "#e0e0e0" }}>
               {new Date(c.date).toLocaleString()}
             </Typography>
           </Paper>

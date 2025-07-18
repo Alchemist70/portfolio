@@ -242,4 +242,20 @@ router.delete("/:id/comment/:commentId", auth, apiLimiter, async (req, res) => {
   }
 });
 
+// Record a unique reader for a blog post
+router.post("/:id/read", apiLimiter, async (req, res) => {
+  try {
+    const post = await Blog.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Blog post not found" });
+    const userId = req.body.userId || req.ip;
+    if (!post.readBy.includes(userId)) {
+      post.readBy.push(userId);
+      await post.save();
+    }
+    res.json({ readBy: post.readBy.length });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

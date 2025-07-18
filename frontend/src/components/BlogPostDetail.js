@@ -43,20 +43,19 @@ const BlogPostDetail = () => {
         // Fetch comments using the post's _id
         const commentsRes = await api.get(`/blog/${res.data._id}/comments`);
         setComments(commentsRes.data);
+        // Record a unique reader and get the count
+        const userId = localStorage.getItem("userId") || "guest";
+        const readRes = await api.post(`/blog/${res.data._id}/read`, {
+          userId,
+        });
+        setUserCount(readRes.data.readBy);
       } catch (err) {
         setError("Blog post not found.");
       } finally {
         setLoading(false);
       }
     };
-    const fetchUserCount = async () => {
-      try {
-        const res = await api.get("/auth/users/count");
-        setUserCount(res.data.count);
-      } catch {}
-    };
     fetchAll();
-    fetchUserCount();
   }, [slugOrId]);
 
   useEffect(() => {

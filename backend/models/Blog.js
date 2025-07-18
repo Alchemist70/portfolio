@@ -69,6 +69,7 @@ const blogSchema = new mongoose.Schema({
       date: { type: Date, default: Date.now },
     },
   ],
+  readBy: [{ type: String }],
   createdAt: {
     type: Date,
     default: Date.now,

@@ -82,11 +82,12 @@ const BlogPostDetail = () => {
     e.preventDefault();
     if (!commentName.trim() || !commentText.trim()) return;
     try {
-      const res = await api.post(`/blog/${post._id}/comment`, {
+      await api.post(`/blog/${post._id}/comment`, {
         name: commentName,
         text: commentText,
       });
-      setComments([...comments, res.data]);
+      const refreshed = await api.get(`/blog/${post._id}/comments`);
+      setComments(refreshed.data);
       setCommentName("");
       setCommentText("");
     } catch {}

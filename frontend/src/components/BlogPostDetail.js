@@ -31,9 +31,8 @@ const BlogPostDetail = () => {
   const { user, token } = useAuth();
 
   useEffect(() => {
-    const fetchPost = async () => {
+    const fetchAll = async () => {
       try {
-        // Try fetching by slug first, then by id if not found
         let res = await api.get(`/blog/${slugOrId}`);
         setPost(res.data);
         setLikes(res.data.likes || 0);
@@ -41,17 +40,14 @@ const BlogPostDetail = () => {
           res.data.likedBy &&
             res.data.likedBy.includes(localStorage.getItem("userId") || "guest")
         );
+        // Fetch comments using the post's _id
+        const commentsRes = await api.get(`/blog/${res.data._id}/comments`);
+        setComments(commentsRes.data);
       } catch (err) {
         setError("Blog post not found.");
       } finally {
         setLoading(false);
       }
-    };
-    const fetchComments = async () => {
-      try {
-        const res = await api.get(`/blog/${slugOrId}/comments`);
-        setComments(res.data);
-      } catch {}
     };
     const fetchUserCount = async () => {
       try {
@@ -59,8 +55,7 @@ const BlogPostDetail = () => {
         setUserCount(res.data.count);
       } catch {}
     };
-    fetchPost();
-    fetchComments();
+    fetchAll();
     fetchUserCount();
   }, [slugOrId]);
 

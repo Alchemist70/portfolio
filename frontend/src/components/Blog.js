@@ -81,24 +81,31 @@ const Blog = ({ featured = false }) => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
-      <Box sx={{ mb: 5 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4, md: 6 } }}>
+      <Box sx={{ mb: { xs: 2, sm: 4, md: 5 } }}>
         <Paper
           elevation={4}
           sx={{
-            p: 3,
+            p: { xs: 2, sm: 3 },
             borderRadius: 4,
             background: "linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)",
             color: "#fff",
-            mb: 4,
+            mb: { xs: 2, sm: 4 },
           }}
         >
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              mb: 1,
+              fontSize: { xs: "1.5rem", sm: "2rem", md: "2.5rem" },
+            }}
+          >
             Blog
           </Typography>
           <Typography
             variant="body1"
-            sx={{ fontSize: "1.1rem", opacity: 0.95 }}
+            sx={{ fontSize: { xs: "1rem", sm: "1.1rem" }, opacity: 0.95 }}
           >
             Dive into my blog for insights, technical writing, and thought
             leadership on software development, emerging technologies, and
@@ -118,7 +125,7 @@ const Blog = ({ featured = false }) => {
           mb: 6,
         }}
       ></Typography>
-      <Grid container spacing={5}>
+      <Grid container spacing={{ xs: 2, sm: 4, md: 5 }}>
         {posts.map((post) => (
           <Grid item key={post._id} xs={12} sm={6} md={4}>
             <MotionCard
@@ -144,7 +151,7 @@ const Blog = ({ featured = false }) => {
                     : "0 4px 24px 0 rgba(60, 72, 88, 0.10)",
                 display: "flex",
                 flexDirection: "column",
-                minHeight: 420,
+                minHeight: { xs: 320, sm: 380, md: 420 },
               }}
             >
               {post.imageUrl && (
@@ -154,7 +161,7 @@ const Blog = ({ featured = false }) => {
                   alt={post.title}
                   sx={{
                     width: "100%",
-                    height: 180,
+                    height: { xs: 120, sm: 150, md: 180 },
                     objectFit: "cover",
                     borderTopLeftRadius: 20,
                     borderTopRightRadius: 20,

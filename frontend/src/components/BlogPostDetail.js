@@ -28,7 +28,7 @@ const BlogPostDetail = () => {
   const [commentText, setCommentText] = useState("");
   const [userCount, setUserCount] = useState(0);
 
-  const { user, token } = useAuth ? useAuth() : { user: null, token: null };
+  const { user, token } = useAuth();
 
   useEffect(() => {
     const fetchPost = async () => {

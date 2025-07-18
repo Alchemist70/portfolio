@@ -1,26 +1,32 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Blog = require('../models/Blog');
-const auth = require('../middleware/auth');
-const { apiLimiter } = require('../middleware/rateLimiter');
-const { blogValidation } = require('../middleware/validator');
-const { getPagination, getPagingData, createSearchQuery } = require('../utils/queryHelpers');
+const Blog = require("../models/Blog");
+const auth = require("../middleware/auth");
+const { apiLimiter } = require("../middleware/rateLimiter");
+const { blogValidation } = require("../middleware/validator");
+const {
+  getPagination,
+  getPagingData,
+  createSearchQuery,
+} = require("../utils/queryHelpers");
 
 // Get all blog posts with pagination and search
-router.get('/', apiLimiter, async (req, res) => {
+router.get("/", apiLimiter, async (req, res) => {
   try {
     const { page = 1, size = 10, search, featured } = req.query;
     const { limit, skip } = getPagination(page, size);
-    const searchQuery = createSearchQuery(search, ['title', 'excerpt', 'content', 'tags']);
+    const searchQuery = createSearchQuery(search, [
+      "title",
+      "excerpt",
+      "content",
+      "tags",
+    ]);
     if (featured !== undefined) {
-      searchQuery.featured = featured === 'true';
+      searchQuery.featured = featured === "true";
     }
     const [posts, total] = await Promise.all([
-      Blog.find(searchQuery)
-        .sort({ createdAt: -1 })
-        .limit(limit)
-        .skip(skip),
-      Blog.countDocuments(searchQuery)
+      Blog.find(searchQuery).sort({ createdAt: -1 }).limit(limit).skip(skip),
+      Blog.countDocuments(searchQuery),
     ]);
     res.json(getPagingData({ count: total, rows: posts }, page, limit));
   } catch (err) {
@@ -29,7 +35,7 @@ router.get('/', apiLimiter, async (req, res) => {
 });
 
 // Get featured blog posts
-router.get('/featured', apiLimiter, async (req, res) => {
+router.get("/featured", apiLimiter, async (req, res) => {
   try {
     const posts = await Blog.find({ featured: true }).sort({ createdAt: -1 });
     res.json(posts);
@@ -39,21 +45,21 @@ router.get('/featured', apiLimiter, async (req, res) => {
 });
 
 // Get blog posts by category
-router.get('/category/:category', apiLimiter, async (req, res) => {
+router.get("/category/:category", apiLimiter, async (req, res) => {
   try {
     const { page = 1, size = 10 } = req.query;
     const { limit, skip } = getPagination(page, size);
-    
+
     const [posts, total] = await Promise.all([
       Blog.find({
-        category: { $regex: req.params.category, $options: 'i' }
+        category: { $regex: req.params.category, $options: "i" },
       })
         .sort({ createdAt: -1 })
         .limit(limit)
         .skip(skip),
       Blog.countDocuments({
-        category: { $regex: req.params.category, $options: 'i' }
-      })
+        category: { $regex: req.params.category, $options: "i" },
+      }),
     ]);
 
     res.json(getPagingData({ count: total, rows: posts }, page, limit));
@@ -63,21 +69,21 @@ router.get('/category/:category', apiLimiter, async (req, res) => {
 });
 
 // Get blog posts by tag
-router.get('/tag/:tag', apiLimiter, async (req, res) => {
+router.get("/tag/:tag", apiLimiter, async (req, res) => {
   try {
     const { page = 1, size = 10 } = req.query;
     const { limit, skip } = getPagination(page, size);
-    
+
     const [posts, total] = await Promise.all([
       Blog.find({
-        tags: { $regex: req.params.tag, $options: 'i' }
+        tags: { $regex: req.params.tag, $options: "i" },
       })
         .sort({ createdAt: -1 })
         .limit(limit)
         .skip(skip),
       Blog.countDocuments({
-        tags: { $regex: req.params.tag, $options: 'i' }
-      })
+        tags: { $regex: req.params.tag, $options: "i" },
+      }),
     ]);
 
     res.json(getPagingData({ count: total, rows: posts }, page, limit));
@@ -86,12 +92,25 @@ router.get('/tag/:tag', apiLimiter, async (req, res) => {
   }
 });
 
+// Get blog post by slug (must come before /:id)
+router.get("/:slug", apiLimiter, async (req, res, next) => {
+  // If it's a valid ObjectId, skip to the next route
+  if (/^[0-9a-fA-F]{24}$/.test(req.params.slug)) return next();
+  try {
+    const post = await Blog.findOne({ slug: req.params.slug });
+    if (!post) return res.status(404).json({ message: "Blog post not found" });
+    res.json(post);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Get single blog post
-router.get('/:id', apiLimiter, async (req, res) => {
+router.get("/:id", apiLimiter, async (req, res) => {
   try {
     const post = await Blog.findById(req.params.id);
     if (!post) {
-      return res.status(404).json({ message: 'Blog post not found' });
+      return res.status(404).json({ message: "Blog post not found" });
     }
     res.json(post);
   } catch (err) {
@@ -100,7 +119,7 @@ router.get('/:id', apiLimiter, async (req, res) => {
 });
 
 // Create blog post (protected route)
-router.post('/', [auth, apiLimiter, blogValidation], async (req, res) => {
+router.post("/", [auth, apiLimiter, blogValidation], async (req, res) => {
   const post = new Blog({
     title: req.body.title,
     slug: req.body.slug,
@@ -112,7 +131,7 @@ router.post('/', [auth, apiLimiter, blogValidation], async (req, res) => {
     category: req.body.category,
     link: req.body.link,
     tags: req.body.tags || [],
-    featured: req.body.featured || false
+    featured: req.body.featured || false,
   });
   try {
     const newPost = await post.save();
@@ -123,13 +142,13 @@ router.post('/', [auth, apiLimiter, blogValidation], async (req, res) => {
 });
 
 // Update blog post (protected route)
-router.patch('/:id', [auth, apiLimiter, blogValidation], async (req, res) => {
+router.patch("/:id", [auth, apiLimiter, blogValidation], async (req, res) => {
   try {
     const post = await Blog.findById(req.params.id);
     if (!post) {
-      return res.status(404).json({ message: 'Blog post not found' });
+      return res.status(404).json({ message: "Blog post not found" });
     }
-    Object.keys(req.body).forEach(key => {
+    Object.keys(req.body).forEach((key) => {
       post[key] = req.body[key];
     });
     const updatedPost = await post.save();
@@ -140,16 +159,16 @@ router.patch('/:id', [auth, apiLimiter, blogValidation], async (req, res) => {
 });
 
 // Delete blog post (protected route)
-router.delete('/:id', [auth, apiLimiter], async (req, res) => {
+router.delete("/:id", [auth, apiLimiter], async (req, res) => {
   try {
     const post = await Blog.findByIdAndDelete(req.params.id);
     if (!post) {
-      return res.status(404).json({ message: 'Blog post not found' });
+      return res.status(404).json({ message: "Blog post not found" });
     }
-    res.json({ message: 'Blog post deleted' });
+    res.json({ message: "Blog post deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-module.exports = router; 
+module.exports = router;

@@ -307,53 +307,70 @@ const Home = () => {
                   gap: 2,
                   flexDirection: { xs: "column", sm: "row" },
                   alignItems: { xs: "center", sm: "flex-start" },
+                  mt: 2,
                 }}
               >
                 {/* About Button */}
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   component={RouterLink}
                   to="/about"
                   sx={{
-                    borderRadius: "25px",
-                    px: 3,
+                    borderRadius: "18px",
+                    px: 4,
                     py: 1.5,
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    background: "#1976d2",
-                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: "1.08rem",
+                    color: "#1976d2",
+                    border: "2px solid #1976d2",
+                    background: "rgba(255,255,255,0.85)",
+                    boxShadow: "0 2px 8px rgba(25, 118, 210, 0.08)",
                     textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
                     "&:hover": {
-                      background: "#1565c0",
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 8px 25px rgba(0,0,0,0.3)",
+                      background: "#1976d2",
+                      color: "#fff",
+                      border: "2px solid #1565c0",
+                      boxShadow: "0 6px 24px rgba(25, 118, 210, 0.18)",
+                      transform: "translateY(-2px) scale(1.04)",
                     },
-                    transition: "all 0.3s ease",
+                    "&:active": {
+                      boxShadow: "0 2px 8px rgba(25, 118, 210, 0.12)",
+                    },
                   }}
                 >
                   About
                 </Button>
                 {/* View CV Button */}
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   href="/My-Resume.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
-                    borderRadius: "25px",
-                    px: 3,
+                    borderRadius: "18px",
+                    px: 4,
                     py: 1.5,
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    background: "#1976d2",
-                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: "1.08rem",
+                    color: "#1976d2",
+                    border: "2px solid #1976d2",
+                    background: "rgba(255,255,255,0.85)",
+                    boxShadow: "0 2px 8px rgba(25, 118, 210, 0.08)",
                     textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
                     "&:hover": {
-                      background: "#1565c0",
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 8px 25px rgba(0,0,0,0.3)",
+                      background: "#1976d2",
+                      color: "#fff",
+                      border: "2px solid #1565c0",
+                      boxShadow: "0 6px 24px rgba(25, 118, 210, 0.18)",
+                      transform: "translateY(-2px) scale(1.04)",
                     },
-                    transition: "all 0.3s ease",
+                    "&:active": {
+                      boxShadow: "0 2px 8px rgba(25, 118, 210, 0.12)",
+                    },
                   }}
                 >
                   View CV
